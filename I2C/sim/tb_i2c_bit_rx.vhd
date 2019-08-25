@@ -17,17 +17,19 @@ end i2c_bit_rx_ut;
 
 architecture i2c_bit_rx_ut_a of i2c_bit_rx_ut is
 
-  constant c_period       : time := integer( 1.0e9/real(g_i2c_freq_hz) ) * 1 ns;
+  constant c_period         : time := integer( 1.0e9/real(g_i2c_freq_hz) ) * 1 ns;
 
-  signal clk              : std_logic := '0';
-  signal reset            : std_logic;
+  signal END_OF_SIMULATION  : boolean := false;
 
-  signal coe_sda_export   : std_logic;
-  signal coe_scl_export   : std_logic;
+  signal clk                : std_logic := '0';
+  signal reset              : std_logic;
 
-  signal aso_bit_data     : std_logic_vector(1 downto 0);
-  signal aso_bit_valid    : std_logic;
-  signal aso_bit_ready    : std_logic;
+  signal coe_sda_export     : std_logic;
+  signal coe_scl_export     : std_logic;
+
+  signal aso_bit_data       : std_logic_vector(1 downto 0);
+  signal aso_bit_valid      : std_logic;
+  signal aso_bit_ready      : std_logic;
 
 begin
 
@@ -48,7 +50,18 @@ begin
       aso_bit_ready   => aso_bit_ready
     );
 
-  clk   <= not clk after 5 ns;
+  PR_clk : process
+  begin
+    if END_OF_SIMULATION then
+      clk <= not clk;
+      wait for 5 ns;
+    end if;
+
+    report "END OF SIMULATION" severity note;
+
+    wait;
+  end process;
+
   reset <= '1', '0' after 100 ns;
 
   i2c_bit_p : process
@@ -129,7 +142,7 @@ begin
     check_bit( C_BIT_1 );
     check_bit( C_STOP );
 
-    report "END OF SIMULATION" severity FAILURE;
+    END_OF_SIMULATION <= true;
 
     wait;
   end process;
