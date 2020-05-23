@@ -1,0 +1,3 @@
+[submodule "vunit"]
+	path = vunit
+	url = https://github.com/yogotie/vunit.git
