@@ -26,7 +26,7 @@ end i2c_bit_rx;
 
 architecture arch_i2c_bit_rx of i2c_bit_rx is
 
-  constant c_cnt_max  : integer := integer(ceil(2.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
+  constant c_cnt_max  : integer := integer(ceil(4.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
 
   type bit_state is (S_IDLE, S_START, S_WAIT, S_STOP, S_BIT);
 

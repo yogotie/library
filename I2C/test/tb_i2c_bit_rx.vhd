@@ -57,6 +57,8 @@ begin
   aclk    <= not aclk after 5 ns;
   aresetn <= '0', '1' after 100 ns;
 
+  test_runner_watchdog(runner, 10 ms);
+
   main : process
   begin
     test_runner_setup(runner, runner_cfg);
