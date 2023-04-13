@@ -1,7 +1,7 @@
 
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
 
 entity i2c is
   generic (
@@ -27,7 +27,7 @@ entity i2c is
   );
 end i2c;
 
-architecture i2c_a of i2c is
+architecture struct_i2c of i2c is
 
   signal sig_sda               : std_logic;
   signal sig_scl               : std_logic;
@@ -110,5 +110,5 @@ begin
       s_axis_byte_tready => s_axis_tx_tready
     );
 
-end i2c_a;
+end struct_i2c;
 

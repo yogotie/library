@@ -18,7 +18,7 @@ entity tb_i2c_bit_tx is
   );
 end tb_i2c_bit_tx;
 
-architecture tb_i2c_bit_tx_a of tb_i2c_bit_tx is
+architecture behav_tb_i2c_bit_tx of tb_i2c_bit_tx is
 
   signal END_OF_SIMULATION : boolean := false;
 
@@ -147,7 +147,7 @@ begin
     wait;
   end process;
 
-end tb_i2c_bit_tx_a;
+end behav_tb_i2c_bit_tx;
 
 -- synthesis translate_on
 

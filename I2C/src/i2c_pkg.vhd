@@ -11,3 +11,4 @@ package i2c_pkg is
   constant C_STOP   : std_logic_vector(1 downto 0) := "11";
 
 end package i2c_pkg;
+

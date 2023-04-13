@@ -16,7 +16,7 @@ entity tb_i2c_byte_rx is
   );
 end tb_i2c_byte_rx;
 
-architecture tb_i2c_byte_rx_a of tb_i2c_byte_rx is
+architecture behav_tb_i2c_byte_rx of tb_i2c_byte_rx is
 
   signal END_OF_SIMULATION  : boolean := false;
 
@@ -139,7 +139,7 @@ begin
     wait;
   end process;
 
-end tb_i2c_byte_rx_a;
+end behav_tb_i2c_byte_rx;
 
 -- synthesis translate_on
 

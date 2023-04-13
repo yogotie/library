@@ -18,7 +18,7 @@ entity tb_i2c is
   );
 end tb_i2c;
 
-architecture tb_i2c_a of tb_i2c is
+architecture behav_tb_i2c of tb_i2c is
 
   constant c_period        : time := integer(1.0e9/real(g_i2c_freq_hz)) * 1 ns;
 
@@ -141,7 +141,7 @@ begin
     wait;
   end process;
 
-end tb_i2c_a;
+end behav_tb_i2c;
 
 -- synthesis translate_on
 

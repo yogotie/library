@@ -3,7 +3,7 @@ from vunit import VUnit
 
 # Create VUnit instance by parsing command line arguments
 vu = VUnit.from_argv(compile_builtins=False)
-vu.add_vhdl_builtins()
+vu.add_builtins()
 
 # Create library 'lib'
 lib = vu.add_library("lib")
@@ -24,5 +24,6 @@ lib.add_source_files("test/tb_i2c_byte_tx.vhd")
 lib.add_source_files("test/tb_i2c.vhd")
 
 # Run vunit function
+#vu.set_sim_option("ghdl.sim_flags",["--wave=mywave.ghw"])
 vu.main()
 

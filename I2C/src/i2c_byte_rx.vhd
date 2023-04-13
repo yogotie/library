@@ -1,9 +1,9 @@
 
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
 
-use work.i2c_pkg.all;
+  use work.i2c_pkg.all;
 
 entity i2c_byte_rx is
   port (
@@ -21,7 +21,7 @@ entity i2c_byte_rx is
   );
 end i2c_byte_rx;
 
-architecture i2c_byte_rx_a of i2c_byte_rx is
+architecture rtl_i2c_byte_rx of i2c_byte_rx is
 
   type array_slv2 is array(natural range<>) of std_logic_vector(1 downto 0);
 
@@ -101,5 +101,5 @@ begin
     end if;
   end process;
 
-end i2c_byte_rx_a;
+end rtl_i2c_byte_rx:
 

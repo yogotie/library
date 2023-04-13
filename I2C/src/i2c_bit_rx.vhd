@@ -24,7 +24,7 @@ entity i2c_bit_rx is
   );
 end i2c_bit_rx;
 
-architecture arch_i2c_bit_rx of i2c_bit_rx is
+architecture rtl_i2c_bit_rx of i2c_bit_rx is
 
   constant c_cnt_max  : integer := integer(ceil(4.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
 
@@ -145,5 +145,5 @@ begin
     end if;
   end process;
 
-end arch_i2c_bit_rx;
+end rtl_i2c_bit_rx;
 

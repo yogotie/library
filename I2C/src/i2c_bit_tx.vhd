@@ -1,10 +1,10 @@
 
 library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use ieee.math_real.all;
+  use ieee.std_logic_1164.all;
+  use ieee.numeric_std.all;
+  use ieee.math_real.all;
 
-use work.i2c_pkg.all;
+  use work.i2c_pkg.all;
 
 entity i2c_bit_tx is
   generic (
@@ -24,7 +24,7 @@ entity i2c_bit_tx is
   );
 end i2c_bit_tx;
 
-architecture i2c_bit_tx_a of i2c_bit_tx is
+architecture rtl_i2c_bit_tx of i2c_bit_tx is
 
   constant c_cnt_max        : integer := integer(ceil(2.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
 
@@ -139,5 +139,5 @@ begin
     end if;
   end process;
 
-end i2c_bit_tx_a;
+end rtl_i2c_bit_tx:
 

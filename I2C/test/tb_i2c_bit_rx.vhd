@@ -19,7 +19,7 @@ entity tb_i2c_bit_rx is
   );
 end tb_i2c_bit_rx;
 
-architecture arch_tb_i2c_bit_rx of tb_i2c_bit_rx is
+architecture behav_tb_i2c_bit_rx of tb_i2c_bit_rx is
 
   constant c_period         : time := integer( 1.0e9/real(g_i2c_freq_hz) ) * 1 ns;
 
@@ -149,7 +149,7 @@ begin
     wait;
   end process;
 
-end arch_tb_i2c_bit_rx;
+end behav_tb_i2c_bit_rx;
 
 -- synthesis translate_on
 

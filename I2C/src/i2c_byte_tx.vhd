@@ -21,7 +21,7 @@ entity i2c_byte_tx is
   );
 end i2c_byte_tx;
 
-architecture i2c_byte_tx_a of i2c_byte_tx is
+architecture rtl_i2c_byte_tx of i2c_byte_tx is
 
   type byte_state is (S_IDLE, S_START_BIT, S_DATA_BIT, S_ACK_BIT, S_STOP_BIT, S_DONE);
 
@@ -131,5 +131,5 @@ begin
     end if;
   end process;
 
-end i2c_byte_tx_a;
+end rtl_i2c_byte_tx:
 

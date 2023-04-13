@@ -1,6 +1,6 @@
 
 library ieee;
-use ieee.std_logic_1164.all;
+  use ieee.std_logic_1164.all;
 
 entity i2c_iobuf is
   port (
@@ -14,7 +14,7 @@ entity i2c_iobuf is
   );
 end i2c_iobuf;
 
-architecture arch_i2c_iobuf of i2c_iobuf is
+architecture rtl_i2c_iobuf of i2c_iobuf is
 
   signal sig_iob_o  : std_logic;
   signal sig_iob_oe : std_logic;
@@ -49,5 +49,5 @@ begin
   io        <= sig_iob_i when sig_iob_oe = '1' else 'Z';
   sig_iob_o <= io;
 
-end arch_i2c_iobuf;
+end rtl_i2c_iobuf;
 
