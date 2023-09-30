@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -21,6 +22,8 @@ end tb_spi_tx;
 
 architecture behav_tb_spi_tx of tb_spi_tx is
 
+  constant s_axis           : axi_stream_master_t := new_axi_stream_master( data_length => 8, dest_length => 8 );
+  
   signal END_OF_SIMULATION  : boolean := false;
 
   signal aclk               : std_logic := '0';
@@ -66,14 +69,14 @@ begin
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
     test_runner_cleanup(runner); -- Simulation ends here
   end process;
 
-  p_spi_csn : process
+  PROC_spi_csn : process
     procedure check_data( csn : std_logic_vector(spi_csn'range); data : std_logic_vector(7 downto 0) ) is
       variable actual : std_logic_vector(data'range) := (others => '0');
     begin
@@ -113,38 +116,35 @@ begin
     wait for 1 us;
 
     END_OF_SIMULATION <= true;
-
     wait;
   end process;
 
-  p_s_axis : process
-    procedure send_data( tdest : std_logic_vector(7 downto 0); tdata : std_logic_vector(7 downto 0); tlast : std_logic ) is
-    begin
-      s_axis_tdest  <= tdest;
-      s_axis_tdata  <= tdata;
-      s_axis_tlast  <= tlast;
-      s_axis_tvalid <= '1';
-      wait until rising_edge(aclk) and s_axis_tready = '1';
-      s_axis_tdest  <= (others => '0');
-      s_axis_tdata  <= (others => '0');
-      s_axis_tlast  <= '0';
-      s_axis_tvalid <= '0';
-    end procedure;
+  PROC_s_axis : process
   begin
-    s_axis_tdata  <= (others => '0');
-    s_axis_tlast  <= '0';
-    s_axis_tvalid <= '0';
-
     wait until rising_edge(aclk) and aresetn = '1';
 
-    send_data( X"00", X"01", '0' );
-    send_data( X"00", X"02", '0' );
-    send_data( X"00", X"03", '0' );
-    send_data( X"00", X"04", '0' );
-    send_data( X"00", X"05", '1' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"01", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"02", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"03", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"04", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"05", tlast => '1' );
 
     wait;
   end process;
+
+  U_s_axis : entity vunit_lib.axi_stream_master
+    generic map(
+      master  => s_axis
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdest    => s_axis_tdest,
+      tdata    => s_axis_tdata,
+      tlast    => s_axis_tlast,
+      tvalid   => s_axis_tvalid,
+      tready   => s_axis_tready
+    );
 
 end behav_tb_spi_tx;
 

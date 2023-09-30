@@ -139,5 +139,5 @@ begin
     end if;
   end process;
 
-end rtl_i2c_bit_tx:
+end rtl_i2c_bit_tx;
 

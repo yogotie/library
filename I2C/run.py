@@ -4,6 +4,7 @@ from vunit import VUnit
 # Create VUnit instance by parsing command line arguments
 vu = VUnit.from_argv(compile_builtins=False)
 vu.add_builtins()
+vu.add_verification_components()
 
 # Create library 'lib'
 lib = vu.add_library("lib")

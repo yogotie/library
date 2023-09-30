@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -20,6 +21,8 @@ entity tb_spi_rx is
 end tb_spi_rx;
 
 architecture behav_tb_spi_rx of tb_spi_rx is
+
+  constant m_axis           : axi_stream_slave_t  := new_axi_stream_slave ( data_length => 8, dest_length => 8 );
 
   signal END_OF_SIMULATION  : boolean := false;
 
@@ -67,14 +70,14 @@ begin
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
     test_runner_cleanup(runner); -- Simulation ends here
   end process;
 
-  p_spi_miso : process
+  PROC_spi_miso : process
     procedure send_data( csn : std_logic_vector(spi_csn'range); data : std_logic_vector(7 downto 0); bit_cnt : integer ) is
     begin
       if spi_csn /= csn then
@@ -118,34 +121,29 @@ begin
     wait;
   end process;
 
-  p_m_axis_tdata : process
-    procedure check_data( tdest : std_logic_vector(7 downto 0); expected : std_logic_vector(7 downto 0); tlast : std_logic ) is
-    begin
-      wait until rising_edge(aclk) and m_axis_tvalid = '1';
-
-      assert m_axis_tdest = tdest
-        report "ERROR tdest : expected(0x" & to_hstring(tdest) & ") : actual(0x" & to_hstring(m_axis_tdest) & ")"
-        severity ERROR;
-
-      assert m_axis_tdata = expected
-        report "ERROR : data : expected(0x" & to_hstring(expected) & ") : actual(0x" & to_hstring(m_axis_tdata) & ")"
-        severity ERROR;
-
-      assert m_axis_tlast = tlast
-        report "ERROR : endofpacket : expected(" & std_logic'image(tlast) & ") : actual(" & std_logic'image(m_axis_tlast) & ")"
-        severity ERROR;
-    end procedure;
+  PROC_m_axis_tdata : process
   begin
-    check_data( X"00", X"01", '1' );
-    check_data( X"01", X"02", '0' );
-    check_data( X"01", X"03", '1' );
+    check_axi_stream( net, m_axis, tdest => X"00", expected => X"01", tlast => '1' );
+    check_axi_stream( net, m_axis, tdest => X"01", expected => X"02", tlast => '0' );
+    check_axi_stream( net, m_axis, tdest => X"01", expected => X"03", tlast => '1' );
 
     END_OF_SIMULATION <= true;
-
     wait;
   end process;
-
-  m_axis_tready  <= '1';
+  
+  U_m_axis : entity vunit_lib.axi_stream_slave
+    generic map(
+      slave   => m_axis
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdest    => m_axis_tdest,
+      tdata    => m_axis_tdata,
+      tlast    => m_axis_tlast,
+      tvalid   => m_axis_tvalid,
+      tready   => m_axis_tready
+    );
 
 end behav_tb_spi_rx;
 

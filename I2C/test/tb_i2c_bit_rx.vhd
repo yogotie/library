@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -20,6 +21,8 @@ entity tb_i2c_bit_rx is
 end tb_i2c_bit_rx;
 
 architecture behav_tb_i2c_bit_rx of tb_i2c_bit_rx is
+  
+  constant m_axis           : axi_stream_slave_t  := new_axi_stream_slave ( data_length => 2 );
 
   constant c_period         : time := integer( 1.0e9/real(g_i2c_freq_hz) ) * 1 ns;
 
@@ -59,14 +62,14 @@ begin
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
     test_runner_cleanup(runner); -- Simulation ends here
   end process;
 
-  i2c_bit_p : process
+  PROC_i2c_bit : process
     procedure send_bit( value : std_logic_vector(1 downto 0) ) is
     begin
       case value is
@@ -123,31 +126,28 @@ begin
     wait;
   end process;
 
-  aso_bit_p : process
-    procedure check_bit( expected : std_logic_vector(1 downto 0) ) is
-    begin
-      m_axis_bit_tready <= '1';
-      wait until rising_edge(aclk) and m_axis_bit_tvalid = '1';
-
-      assert m_axis_bit_tdata = expected
-        report "ERROR expected(0x" & to_hstring(expected) & ") : actual(0x" & to_hstring(m_axis_bit_tdata) & ")"
-        severity ERROR;
-
-      m_axis_bit_tready <= '0';
-      wait until rising_edge(aclk);
-
-    end procedure;
+  PROC_m_axis_bit : process
   begin
-
-    check_bit( C_START );
-    check_bit( C_BIT_0 );
-    check_bit( C_BIT_1 );
-    check_bit( C_STOP );
+    check_axi_stream( net, m_axis, expected => C_START );
+    check_axi_stream( net, m_axis, expected => C_BIT_0 );
+    check_axi_stream( net, m_axis, expected => C_BIT_1 );
+    check_axi_stream( net, m_axis, expected => C_STOP  );
 
     END_OF_SIMULATION <= true;
-
     wait;
   end process;
+  
+  U_m_axis : entity vunit_lib.axi_stream_slave
+    generic map(
+      slave   => m_axis
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdata    => m_axis_bit_tdata,
+      tvalid   => m_axis_bit_tvalid,
+      tready   => m_axis_bit_tready
+    );
 
 end behav_tb_i2c_bit_rx;
 

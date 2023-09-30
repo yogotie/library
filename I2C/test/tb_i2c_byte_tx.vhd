@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -17,6 +18,9 @@ entity tb_i2c_byte_tx is
 end tb_i2c_byte_tx;
 
 architecture behav_tb_i2c_byte_tx of tb_i2c_byte_tx is
+
+  constant m_axis_bit       : axi_stream_slave_t  := new_axi_stream_slave ( data_length => 2 );
+  constant s_axis_byte      : axi_stream_master_t := new_axi_stream_master( data_length => 8, user_length => 3 );
 
   signal END_OF_SIMULATION  : boolean := false;
 
@@ -54,76 +58,51 @@ begin
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
     test_runner_cleanup(runner); -- Simulation ends here
   end process;
 
-  m_axis_bit_tp : process
-    procedure check_bit( expected : std_logic_vector(1 downto 0) ) is
-    begin
-      m_axis_bit_tready <= '1';
-      wait until rising_edge(aclk) and m_axis_bit_tvalid = '1';
-
-      assert m_axis_bit_tdata = expected
-        report "ERROR expected(0x" & to_hstring(expected) & ") : actual(0x" & to_hstring(m_axis_bit_tdata) & ")"
-        severity ERROR;
-
-      m_axis_bit_tready <= '0';
-      wait until rising_edge(aclk);
-
-    end procedure;
-
+  PROC_m_axis_bit : process
     procedure check_byte( sop : std_logic; eop : std_logic; ack : std_logic; value : std_logic_vector(7 downto 0) ) is
     begin
       if sop = '1' then
-        check_bit( C_START );
+        check_axi_stream( net, m_axis_bit, expected => C_START );
       end if;
 
       for i in 7 downto 0 loop
-        if value(i) = '0' then check_bit( C_BIT_0 ); end if;
-        if value(i) = '1' then check_bit( C_BIT_1 ); end if;
+        if value(i) = '0' then check_axi_stream( net, m_axis_bit, expected => C_BIT_0 ); end if;
+        if value(i) = '1' then check_axi_stream( net, m_axis_bit, expected => C_BIT_1 ); end if;
       end loop;
 
-      if ack = '0' then check_bit( C_BIT_0 ); end if;
-      if ack = '1' then check_bit( C_BIT_1 ); end if;
+      if ack = '0' then check_axi_stream( net, m_axis_bit, expected => C_BIT_0 ); end if;
+      if ack = '1' then check_axi_stream( net, m_axis_bit, expected => C_BIT_1 ); end if;
 
       if eop = '1' then
-        check_bit( C_STOP );
+        check_axi_stream( net, m_axis_bit, expected => C_STOP );
       end if;
     end procedure;
   begin
-    m_axis_bit_tready <= '0';
-
     check_byte( '1', '0', '1', X"01" );
     check_byte( '0', '0', '1', X"02" );
     check_byte( '0', '1', '0', X"03" );
 
     END_OF_SIMULATION <= true;
-
     wait;
   end process;
 
-  s_axis_byte_tp : process
+  PROC_s_axis_byte : process
     procedure send_byte( sop : std_logic; eop : std_logic; err : std_logic; value : std_logic_vector(7 downto 0) ) is
+      variable v_tuser : std_logic_vector(2 downto 0);
     begin
-      s_axis_byte_tuser(2) <= err;
-      s_axis_byte_tuser(1) <= eop;
-      s_axis_byte_tuser(0) <= sop;
-      s_axis_byte_tdata    <= value;
-      s_axis_byte_tvalid   <= '1';
-      wait until rising_edge(aclk) and s_axis_byte_tready = '1';
-      s_axis_byte_tuser    <= (others => '0');
-      s_axis_byte_tdata    <= (others => '0');
-      s_axis_byte_tvalid   <= '0';
+      v_tuser(2) := err;
+      v_tuser(1) := eop;
+      v_tuser(0) := sop;
+      push_axi_stream( net, s_axis_byte, tdata => value, tuser => v_tuser );
     end procedure;
   begin
-    s_axis_byte_tuser    <= (others => '0');
-    s_axis_byte_tdata    <= (others => '0');
-    s_axis_byte_tvalid   <= '0';
-
     wait until rising_edge(aclk) and aresetn = '1';
 
     send_byte( '1', '0', '1', X"01" );
@@ -132,6 +111,31 @@ begin
 
     wait;
   end process;
+  
+  U_m_axis_bit : entity vunit_lib.axi_stream_slave
+    generic map(
+      slave   => m_axis_bit
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdata    => m_axis_bit_tdata,
+      tvalid   => m_axis_bit_tvalid,
+      tready   => m_axis_bit_tready
+    );
+  
+  U_s_axis_byte : entity vunit_lib.axi_stream_master
+    generic map(
+      master  => s_axis_byte
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tuser    => s_axis_byte_tuser,
+      tdata    => s_axis_byte_tdata,
+      tvalid   => s_axis_byte_tvalid,
+      tready   => s_axis_byte_tready
+    );
 
 end behav_tb_i2c_byte_tx;
 

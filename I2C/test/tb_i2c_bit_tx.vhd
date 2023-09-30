@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -19,6 +20,8 @@ entity tb_i2c_bit_tx is
 end tb_i2c_bit_tx;
 
 architecture behav_tb_i2c_bit_tx of tb_i2c_bit_tx is
+
+  constant s_axis_bit      : axi_stream_master_t := new_axi_stream_master( data_length => 2 );
 
   signal END_OF_SIMULATION : boolean := false;
 
@@ -56,14 +59,14 @@ begin
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
     test_runner_cleanup(runner); -- Simulation ends here
   end process;
 
-  i2c_check_p : process
+  PROC_i2c_check : process
     procedure check_bit( value : std_logic_vector(1 downto 0) ) is
     begin
       if scl_out /= '0' and scl_out /= '1' then
@@ -125,28 +128,29 @@ begin
     wait;
   end process;
 
-  s_axis_bit_tp : process
-    procedure send_bit( value : std_logic_vector(1 downto 0) ) is
-    begin
-      s_axis_bit_tdata  <= value;
-      s_axis_bit_tvalid <= '1';
-      wait until rising_edge(aclk) and s_axis_bit_tready = '1';
-      s_axis_bit_tvalid <= '0';
-      wait until rising_edge(aclk);
-    end procedure;
+  PROC_s_axis_bit : process
   begin
-    s_axis_bit_tdata  <= (others => '0');
-    s_axis_bit_tvalid <= '0';
+    wait until rising_edge(aclk) and aresetn = '1';
 
-    wait for 1 us;
-    send_bit( C_START );
-    send_bit( C_BIT_0 );
-    send_bit( C_BIT_1 );
-    send_bit( C_STOP );
+    push_axi_stream( net, s_axis_bit, tdata => C_START );
+    push_axi_stream( net, s_axis_bit, tdata => C_BIT_0 );
+    push_axi_stream( net, s_axis_bit, tdata => C_BIT_1 );
+    push_axi_stream( net, s_axis_bit, tdata => C_STOP );
 
     wait;
   end process;
 
+  U_s_axis_bit : entity vunit_lib.axi_stream_master
+    generic map(
+      master  => s_axis_bit
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdata    => s_axis_bit_tdata,
+      tvalid   => s_axis_bit_tvalid,
+      tready   => s_axis_bit_tready
+    );
 end behav_tb_i2c_bit_tx;
 
 -- synthesis translate_on

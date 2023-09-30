@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -20,6 +21,9 @@ entity tb_spi is
 end tb_spi;
 
 architecture behav_tb_spi of tb_spi is
+
+  constant s_axis           : axi_stream_master_t := new_axi_stream_master( dest_length => 8, data_length => 8 );
+  constant m_axis           : axi_stream_slave_t  := new_axi_stream_slave ( dest_length => 8, data_length => 8 );
 
   signal END_OF_SIMULATION  : boolean := false;
 
@@ -83,7 +87,7 @@ begin
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
@@ -92,65 +96,60 @@ begin
 
   spi_miso <= spi_mosi;
 
-  p_m_axis : process
-    procedure check_data( tdest : std_logic_vector(7 downto 0); tdata : std_logic_vector(7 downto 0); tlast : std_logic ) is
-    begin
-      wait until rising_edge(aclk) and m_axis_tvalid = '1';
-
-      assert m_axis_tdest = tdest
-        report "ERROR tdest : tdata(0x" & to_hstring(tdest) & ") : actual(0x" & to_hstring(m_axis_tdest) & ")"
-        severity ERROR;
-
-      assert m_axis_tdata = tdata
-        report "ERROR : data : tdata(0x" & to_hstring(tdata) & ") : actual(0x" & to_hstring(m_axis_tdata) & ")"
-        severity ERROR;
-
-      assert m_axis_tlast = tlast
-        report "ERROR : endofpacket : tdata(" & std_logic'image(tlast) & ") : actual(" & std_logic'image(m_axis_tlast) & ")"
-        severity ERROR;
-    end procedure;
+  PROC_m_axis : process
   begin
-    check_data( X"00", X"01", '0' );
-    check_data( X"00", X"02", '0' );
-    check_data( X"00", X"03", '0' );
-    check_data( X"00", X"04", '0' );
-    check_data( X"00", X"05", '1' );
+    check_axi_stream( net, m_axis, tdest => X"00", expected => X"01", tlast => '0' );
+    check_axi_stream( net, m_axis, tdest => X"00", expected => X"02", tlast => '0' );
+    check_axi_stream( net, m_axis, tdest => X"00", expected => X"03", tlast => '0' );
+    check_axi_stream( net, m_axis, tdest => X"00", expected => X"04", tlast => '0' );
+    check_axi_stream( net, m_axis, tdest => X"00", expected => X"05", tlast => '1' );
 
     END_OF_SIMULATION <= true;
-
     wait;
   end process;
 
   m_axis_tready  <= '1';
 
-  p_s_axis : process
-    procedure send_data( tdest : std_logic_vector(7 downto 0); tdata : std_logic_vector(7 downto 0); tlast : std_logic ) is
-    begin
-      s_axis_tdest  <= tdest;
-      s_axis_tdata  <= tdata;
-      s_axis_tlast  <= tlast;
-      s_axis_tvalid <= '1';
-      wait until rising_edge(aclk) and s_axis_tready = '1';
-      s_axis_tdest  <= (others => '0');
-      s_axis_tdata  <= (others => '0');
-      s_axis_tlast  <= '0';
-      s_axis_tvalid <= '0';
-    end procedure;
+  PROC_s_axis : process
   begin
-    s_axis_tdata  <= (others => '0');
-    s_axis_tlast  <= '0';
-    s_axis_tvalid <= '0';
-
     wait until rising_edge(aclk) and aresetn = '0';
 
-    send_data( X"00", X"01", '0' );
-    send_data( X"00", X"02", '0' );
-    send_data( X"00", X"03", '0' );
-    send_data( X"00", X"04", '0' );
-    send_data( X"00", X"05", '1' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"01", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"02", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"03", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"04", tlast => '0' );
+    push_axi_stream( net, s_axis, tdest => X"00", tdata => X"05", tlast => '1' );
 
     wait;
   end process;
+  
+  U_m_axis : entity vunit_lib.axi_stream_slave
+    generic map(
+      slave   => m_axis
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdest    => m_axis_tdest,
+      tdata    => m_axis_tdata,
+      tlast    => m_axis_tlast,
+      tvalid   => m_axis_tvalid,
+      tready   => m_axis_tready
+    );
+
+  U_s_axis : entity vunit_lib.axi_stream_master
+    generic map(
+      master  => s_axis
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdest    => s_axis_tdest,
+      tdata    => s_axis_tdata,
+      tlast    => s_axis_tlast,
+      tvalid   => s_axis_tvalid,
+      tready   => s_axis_tready
+    );
 
 end behav_tb_spi;
 

@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -18,6 +19,8 @@ end tb_uart_tx;
 
 architecture behave_tb_uart_tx of tb_uart_tx is
   
+  constant s_axis           : axi_stream_master_t := new_axi_stream_master( data_length => 8 );
+
   signal END_OF_SIMULATION  : boolean := false;
 
   signal c_baud_period      : time := real(real(1) / real(g_baud_rate)) * 1 sec;
@@ -82,30 +85,32 @@ begin
     check_data( X"34" );
 
     END_OF_SIMULATION <= true;
-
     wait;
   end process;
   
   s_axis_tlast    <= '1';
 
   p_s_axis : process
-    procedure send_data( value : std_logic_vector(7 downto 0) ) is
-    begin
-      s_axis_tdata   <= value;
-      s_axis_tvalid  <= '1';
-      wait until rising_edge(aclk) and s_axis_tready = '1';
-      s_axis_tvalid  <= '0';
-      wait until rising_edge(aclk);
-    end procedure;
   begin
-    s_axis_tdata <= (others => '0');
-    s_axis_tvalid <= '0';
-    
     wait for 1 us;
-    send_data( X"12" );
-    send_data( X"34" );
+    push_axi_stream( net, s_axis, tdata => X"12", tlast => '1' );
+    push_axi_stream( net, s_axis, tdata => X"34", tlast => '1' );
+
     wait;
   end process;
+  
+  U_s_axis : entity vunit_lib.axi_stream_master
+    generic map(
+      master  => s_axis
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdata    => s_axis_tdata,
+      tlast    => s_axis_tlast,
+      tvalid   => s_axis_tvalid,
+      tready   => s_axis_tready
+    );
   
 end architecture behave_tb_uart_tx;
 

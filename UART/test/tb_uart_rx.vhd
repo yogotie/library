@@ -3,6 +3,7 @@
 
 library vunit_lib;
   context vunit_lib.vunit_context;
+  context vunit_lib.vc_context;
 
 library ieee;
   use ieee.std_logic_1164.all;
@@ -17,6 +18,8 @@ entity tb_uart_rx is
 end tb_uart_rx;
 
 architecture behav_uart_rx_ut of tb_uart_rx is
+
+  constant m_axis           : axi_stream_slave_t  := new_axi_stream_slave ( data_length => 8 );
 
   signal END_OF_SIMULATION  : boolean := false;
   
@@ -91,23 +94,26 @@ begin
   end process;
 
   p_m_axis : process
-    procedure check_data( expected : std_logic_vector(7 downto 0) ) is
-    begin
-      wait until rising_edge(aclk) and m_axis_tvalid = '1';
-      assert m_axis_tdata = expected
-        report "ERROR expected(0x" & to_hstring(expected) & ") : actual(0x" & to_hstring(m_axis_tdata) & ")"
-        severity ERROR;
-    end procedure;
   begin
-    check_data( X"12" );
-    check_data( X"34" );
+    check_axi_stream( net, m_axis, expected => X"12", tlast => '1' );
+    check_axi_stream( net, m_axis, expected => X"34", tlast => '1' );
 
     END_OF_SIMULATION <= true;
-
     wait;
   end process;
-
-  m_axis_tready <= '1';
+  
+  U_m_axis : entity vunit_lib.axi_stream_slave
+    generic map(
+      slave   => m_axis
+    )
+    port map(
+      aclk     => aclk,
+      areset_n => aresetn,
+      tdata    => m_axis_tdata,
+      tlast    => m_axis_tlast,
+      tvalid   => m_axis_tvalid,
+      tready   => m_axis_tready
+    );
   
 end behav_uart_rx_ut;
 
