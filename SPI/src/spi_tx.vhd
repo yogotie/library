@@ -29,11 +29,11 @@ end spi_tx;
 
 architecture rtl_spi_tx of spi_tx is
 
-  constant c_max_count  : integer := clk_freq / spi_freq;
+  constant C_MAX_COUNT  : integer := clk_freq / spi_freq;
 
-  type t_spi_state is (S_IDLE, S_SET_CSN, S_DATA, S_CLR_CSN, S_DONE);
+  type T_spi_state is (S_IDLE, S_SET_CSN, S_DATA, S_CLR_CSN, S_DONE);
 
-  signal sig_spi_s      : t_spi_state := S_IDLE;
+  signal sig_spi_s      : T_spi_state := S_IDLE;
 
   signal sig_spi_csn    : std_logic_vector(spi_csn'range);
   signal sig_spi_mosi   : std_logic;
@@ -49,11 +49,11 @@ begin
   spi_csn   <= sig_spi_csn;
   spi_mosi  <= sig_spi_mosi;
 
-  g_spi_clk_pol_0 : if cpol = 0 generate
+  UG_spi_clk_pol_0 : if cpol = 0 generate
     spi_clk <= not sig_spi_clk;
   end generate;
 
-  g_spi_clk_pol_1 : if cpol = 1 generate
+  UG_spi_clk_pol_1 : if cpol = 1 generate
     spi_clk <= sig_spi_clk;
   end generate;
 
@@ -61,7 +61,7 @@ begin
 
   sig_word_done <= '1' when sig_bit_cnt = 0 else '0';
 
-  p_sig_spi_csn : process(aclk) is
+  PROC_sig_spi_csn : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -78,7 +78,7 @@ begin
     end if;
   end process;
 
-  p_sig_spi_mosi : process(aclk) is
+  PROC_sig_spi_mosi : process(aclk) is
   begin
     if rising_edge(aclk) then
       case sig_spi_s is
@@ -88,14 +88,14 @@ begin
     end if;
   end process;
 
-  p_sig_spi_clk : process(aclk) is
+  PROC_sig_spi_clk : process(aclk) is
   begin
     if rising_edge(aclk) then
       if sig_spi_s = S_DATA then
         if cpha = 1 then
-          if sig_counter = 0 then sig_spi_clk <= '0'; elsif sig_counter = c_max_count / 2 then sig_spi_clk <= '1'; end if;
+          if sig_counter = 0 then sig_spi_clk <= '0'; elsif sig_counter = C_MAX_COUNT / 2 then sig_spi_clk <= '1'; end if;
         else
-          if sig_counter = 0 then sig_spi_clk <= '1'; elsif sig_counter = c_max_count / 2 then sig_spi_clk <= '0'; end if;
+          if sig_counter = 0 then sig_spi_clk <= '1'; elsif sig_counter = C_MAX_COUNT / 2 then sig_spi_clk <= '0'; end if;
         end if;
       elsif sig_spi_s = S_DONE and sig_spi_csn /= (sig_spi_csn'range => '1') then
         if cpha = 1 then
@@ -110,13 +110,13 @@ begin
   end process;
 
   -- flag when the bit time is complete
-  p_sig_cnt_done : process(aclk) is
+  PROC_sig_cnt_done : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
         sig_cnt_done <= '0';
       else
-        if sig_counter = c_max_count - 2 then
+        if sig_counter = C_MAX_COUNT - 2 then
           sig_cnt_done <= '1';
         else
           sig_cnt_done <= '0';
@@ -126,7 +126,7 @@ begin
   end process;
 
   -- counter for the length of each bit
-  p_sig_counter : process(aclk) is
+  PROC_sig_counter : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -141,7 +141,7 @@ begin
     end if;
   end process;
 
-  p_sig_bit_cnt : process(aclk) is
+  PROC_sig_bit_cnt : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -156,7 +156,7 @@ begin
     end if;
   end process;
 
-  p_sig_spi_s : process(aclk) is
+  PROC_sig_spi_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then

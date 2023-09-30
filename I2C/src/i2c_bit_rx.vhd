@@ -26,11 +26,11 @@ end i2c_bit_rx;
 
 architecture rtl_i2c_bit_rx of i2c_bit_rx is
 
-  constant c_cnt_max  : integer := integer(ceil(4.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
+  constant C_CNT_MAX  : integer := integer(ceil(4.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
 
-  type bit_state is (S_IDLE, S_START, S_WAIT, S_STOP, S_BIT);
+  type T_bit_state is (S_IDLE, S_START, S_WAIT, S_STOP, S_BIT);
 
-  signal sig_bit_s      : bit_state;
+  signal sig_bit_s      : T_bit_state;
 
   signal sig_sda_in     : std_logic;
   signal sig_scl_in     : std_logic;
@@ -63,33 +63,33 @@ begin
   sig_scl_r         <= '1' when sig_scl = "01" else '0';
   sig_scl_f         <= '1' when sig_scl = "10" else '0';
 
-  sig_sda_p : process(aclk) is
+  PROC_sig_sda : process(aclk) is
   begin
     if rising_edge(aclk) then
       sig_sda <= sig_sda(sig_sda'left - 1 downto 0) & sig_sda_in;
     end if;
   end process;
 
-  sig_scl_p : process(aclk) is
+  PROC_sig_scl : process(aclk) is
   begin
     if rising_edge(aclk) then
       sig_scl <= sig_scl(sig_scl'left - 1 downto 0) & sig_scl_in;
     end if;
   end process;
 
-  sig_timeout_p : process(aclk) is
+  PROC_sig_timeout : process(aclk) is
   begin
     if rising_edge(aclk) then
       if sig_bit_s = S_IDLE then
         sig_timeout <= (others => '0');
       end if;
-      if sig_bit_s /= S_IDLE and sig_timeout <= c_cnt_max - 1 then
+      if sig_bit_s /= S_IDLE and sig_timeout <= C_CNT_MAX - 1 then
         sig_timeout <= sig_timeout + 1;
       end if;
     end if;
   end process;
 
-  bit_sm : process(aclk) is
+  PROC_sig_bit_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -109,7 +109,7 @@ begin
             end if;
 
           when S_START =>
-            if sig_timeout = c_cnt_max - 1 then
+            if sig_timeout = C_CNT_MAX - 1 then
               sig_bit_s     <= S_IDLE;
             end if;
 
@@ -120,7 +120,7 @@ begin
             end if;
 
           when S_WAIT =>
-            if sig_timeout = c_cnt_max - 1 then
+            if sig_timeout = C_CNT_MAX - 1 then
               sig_bit_s     <= S_IDLE;
             end if;
 

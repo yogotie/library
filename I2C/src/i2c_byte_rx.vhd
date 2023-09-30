@@ -23,14 +23,14 @@ end i2c_byte_rx;
 
 architecture rtl_i2c_byte_rx of i2c_byte_rx is
 
-  type array_slv2 is array(natural range<>) of std_logic_vector(1 downto 0);
+  type T_array_slv2 is array(natural range<>) of std_logic_vector(1 downto 0);
 
   type T_byte_state is (S_IDLE, S_HANDLE_BYTE, S_PUSH_BYTE);
 
   signal sig_byte_s             : T_byte_state;
   signal sig_s_axis_bit_tready  : std_logic;
   signal sig_byte_ready         : std_logic;
-  signal sig_bit_data           : array_slv2(15 downto 0);
+  signal sig_bit_data           : T_array_slv2(15 downto 0);
   signal sig_bit_cnt            : integer range 0 to 15;
 
 begin
@@ -40,7 +40,7 @@ begin
   sig_s_axis_bit_tready <= '1' when sig_byte_s = S_IDLE and sig_byte_ready = '0'else '0';
   sig_byte_ready        <= '1' when sig_bit_data(0) = C_STOP or (sig_bit_data(10) = C_START and sig_bit_cnt >= 11) or sig_bit_cnt >= 11 else '0';
 
-  sig_m_axis_byte_p : process(aclk) is
+  PROC_sig_m_axis_byte : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -76,7 +76,7 @@ begin
     end if;
   end process;
 
-  sig_bit_data_p : process(aclk) is
+  PROC_sig_bit_data : process(aclk) is
   begin
     if rising_edge(aclk) then
       if s_axis_bit_tvalid = '1' and sig_s_axis_bit_tready = '1' then
@@ -85,7 +85,7 @@ begin
     end if;
   end process;
 
-  sig_bit_cnt_p : process(aclk) is
+  PROC_sig_bit_cnt : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -106,7 +106,7 @@ begin
     end if;
   end process;
 
-  sig_byte_sm : process(aclk) is
+  PROC_sig_byte_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then

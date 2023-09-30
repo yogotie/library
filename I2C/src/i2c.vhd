@@ -43,10 +43,10 @@ architecture struct_i2c of i2c is
 
 begin
 
-  u_sda_iobuf : entity work.i2c_iobuf port map ( aclk => aclk, o => sig_sda, i => '0', oe => not sig_sda_t, io => sda_inout );
-  u_scl_iobuf : entity work.i2c_iobuf port map ( aclk => aclk, o => sig_scl, i => '0', oe => not sig_scl_t, io => scl_inout );
+  U_sda_iobuf : entity work.i2c_iobuf port map ( aclk => aclk, o => sig_sda, i => '0', oe => not sig_sda_t, io => sda_inout );
+  U_scl_iobuf : entity work.i2c_iobuf port map ( aclk => aclk, o => sig_scl, i => '0', oe => not sig_scl_t, io => scl_inout );
 
-  u_i2c_bit_rx : entity work.i2c_bit_rx
+  U_i2c_bit_rx : entity work.i2c_bit_rx
     generic map (
       g_clock_freq_hz   => g_clock_freq_hz,
       g_i2c_freq_hz     => g_i2c_freq_hz
@@ -63,7 +63,7 @@ begin
       m_axis_bit_tready => sig_m_axis_bit_tready
     );
 
-  u_i2c_bit_tx : entity work.i2c_bit_tx
+  U_i2c_bit_tx : entity work.i2c_bit_tx
     generic map (
       g_clock_freq_hz   => g_clock_freq_hz,
       g_i2c_freq_hz     => g_i2c_freq_hz
@@ -80,7 +80,7 @@ begin
       s_axis_bit_tready => sig_s_axis_bit_tready
     );
 
-  u_i2c_byte_rx : entity work.i2c_byte_rx
+  U_i2c_byte_rx : entity work.i2c_byte_rx
     port map (
       aclk               => aclk,
       aresetn            => aresetn,
@@ -95,7 +95,7 @@ begin
       m_axis_byte_tready => m_axis_rx_tready
     );
 
-  u_i2c_byte_tx : entity work.i2c_byte_tx
+  U_i2c_byte_tx : entity work.i2c_byte_tx
     port map (
       aclk               => aclk,
       aresetn            => aresetn,
@@ -111,4 +111,3 @@ begin
     );
 
 end struct_i2c;
-

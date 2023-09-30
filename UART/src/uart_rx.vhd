@@ -12,14 +12,8 @@ entity uart_rx is
     aclk          : in  std_logic;
     aresetn       : in  std_logic;
 
-    ------------------------
-    -- uart_rx Interface
-    ------------------------
     rx            : in  std_logic;
 
-    ------------------------
-    -- FPGA Fabric Receive Interface
-    ------------------------
     m_axis_tdata  : out std_logic_vector(7 downto 0);
     m_axis_tlast  : out std_logic;
     m_axis_tvalid : out std_logic;
@@ -29,11 +23,11 @@ end uart_rx;
 
 architecture rtl_uart_rx of uart_rx is
 
-  constant c_max_count  : integer := g_clk_freq / g_baud_rate;
+  constant C_MAX_COUNT  : integer := g_clk_freq / g_baud_rate;
 
-  type t_rx_state is (S_IDLE, S_START, S_DATA, S_STOP);
+  type T_rx_state is (S_IDLE, S_START, S_DATA, S_STOP);
 
-  signal sig_rx_s       : t_rx_state := S_IDLE;         -- receiver state machine
+  signal sig_rx_s       : T_rx_state := S_IDLE;         -- receiver state machine
 
   signal sig_rx         : std_logic_vector(2 downto 0); -- register incomming signal
   signal sig_edge       : std_logic;                    -- detects any edge
@@ -49,10 +43,10 @@ begin
   m_axis_tlast  <= '1';
 
   sig_edge      <= sig_rx(sig_rx'left) xor sig_rx(sig_rx'left - 1);     -- an edge is detected when the last to input registers are different
-  sig_cnt_done  <= '1' when sig_counter = c_max_count - 1 else '0'; -- count is done once it has reached the max valud
-  sig_half_bit  <= '1' when sig_counter = c_max_count / 2 else '0'; -- half a bit time is done once count is at half
+  sig_cnt_done  <= '1' when sig_counter = C_MAX_COUNT - 1 else '0'; -- count is done once it has reached the max valud
+  sig_half_bit  <= '1' when sig_counter = C_MAX_COUNT / 2 else '0'; -- half a bit time is done once count is at half
 
-  p_m_axis_tvalid : process(aclk) is
+  PROC_m_axis_tvalid : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -68,7 +62,7 @@ begin
   end process;
 
   -- register the input signal
-  p_sig_rx : process(aclk) is
+  PROC_sig_rx : process(aclk) is
   begin
     if rising_edge(aclk) then
       sig_rx <= sig_rx(sig_rx'left - 1 downto 0) & rx;
@@ -76,7 +70,7 @@ begin
   end process;
 
   -- count the bit time
-  p_sig_counter : process(aclk) is
+  PROC_sig_counter : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -92,7 +86,7 @@ begin
   end process;
 
   -- count the number of bits
-  p_sig_bit_cnt : process(aclk) is
+  PROC_sig_bit_cnt : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -108,7 +102,7 @@ begin
   end process;
 
   -- input shift register
-  p_sig_data : process(aclk) is
+  PROC_sig_data : process(aclk) is
   begin
     if rising_edge(aclk) then
       if sig_half_bit = '1' and sig_rx_s = S_DATA then
@@ -118,7 +112,7 @@ begin
   end process;
 
   -- receieve state machine
-  p_sig_rx_s : process(aclk) is
+  PROC_sig_rx_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then

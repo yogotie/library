@@ -23,21 +23,21 @@ architecture rtl_i2c_iobuf of i2c_iobuf is
 
 begin
 
-  proc_o : process(aclk) is
+  PROC_o : process(aclk) is
   begin
     if rising_edge(aclk) then
       o <= sig_iob_o;
     end if;
   end process;
 
-  proc_sig_iob_i : process(aclk) is
+  PROC_sig_iob_i : process(aclk) is
   begin
     if rising_edge(aclk) then
       sig_iob_i <= i;
     end if;
   end process;
 
-  proc_sig_iob_oe : process(aclk) is
+  PROC_sig_iob_oe : process(aclk) is
   begin
     if rising_edge(aclk) then
       sig_iob_oe <= oe;

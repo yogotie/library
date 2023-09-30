@@ -13,42 +13,32 @@ entity uart_axi is
     aclk                : in  std_logic;
     aresetn             : in  std_logic;
 
-    --------------------
-    -- Interrupt Request
-    --------------------
     irq                 : out std_logic;
 
-    ------------------------
-    -- FPGA Fabric Interface
-    ------------------------
     s_axi_araddr        : in  std_logic_vector( 7 downto 0);
     s_axi_arvalid       : in  std_logic;
     s_axi_arready       : out std_logic;
-
     s_axi_rdata         : out std_logic_vector(31 downto 0);
     s_axi_rvalid        : out std_logic;
     s_axi_rready        : in  std_logic;
-
     s_axi_awaddr        : in  std_logic_vector( 7 downto 0);
     s_axi_awvalid       : in  std_logic;
     s_axi_awready       : out std_logic;
-
     s_axi_wdata         : in  std_logic_vector(31 downto 0);
     s_axi_wstrb         : in  std_logic_vector( 3 downto 0);
     s_axi_wvalid        : in  std_logic;
     s_axi_wready        : out std_logic;
-
     s_axi_bresp         : out std_logic_vector( 1 downto 0);
     s_axi_bvalid        : out std_logic;
     s_axi_bready        : in  std_logic
   );
 end uart_axi;
 
-architecture uart_avalon_a of uart_axi is
+architecture rtl_uart_avalon of uart_axi is
 
-  type reg_state is (S_IDLE, S_READ, S_READ_DONE, S_WRITE, S_WRITE_DONE);
+  type T_reg_state is (S_IDLE, S_READ, S_READ_DONE, S_WRITE, S_WRITE_DONE);
 
-  signal sig_reg_s        : reg_state := S_IDLE;
+  signal sig_reg_s        : T_reg_state := S_IDLE;
   signal sig_s_axi_rdata  : std_logic_vector( s_axi_rdata'range );
   signal sig_int_enable   : std_logic_vector( 1 downto 0 );
   signal sig_int          : std_logic_vector( 1 downto 0 );
@@ -66,7 +56,7 @@ begin
   -- post an interrupt when an event occurs
   irq               <= or_reduce( sig_int_enable and sig_int );
 
-  p_sig_s_axi_rdata : process(aclk) is
+  PROC_sig_s_axi_rdata : process(aclk) is
   begin
     if rising_edge(aclk) then
       case s_axi_araddr is
@@ -79,7 +69,7 @@ begin
     end if;
   end process;
 
-  p_write : process(aclk) is
+  PROC_write : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -97,7 +87,7 @@ begin
     end if;
   end process;
 
-  p_sig_reg_s : process(aclk) is
+  PROC_sig_reg_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -130,5 +120,5 @@ begin
     end if;
   end process;
 
-end uart_avalon_a;
+end rtl_uart_avalon;
 

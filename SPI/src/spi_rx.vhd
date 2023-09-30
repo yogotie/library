@@ -30,11 +30,11 @@ end spi_rx;
 
 architecture rtl_spi_rx of spi_rx is
 
-  constant c_max_count      : integer := (clk_freq / spi_freq) * 2;
+  constant C_MAX_COUNT      : integer := (clk_freq / spi_freq) * 2;
 
-  type t_spi_state is (S_IDLE, S_START, S_DATA, S_VALID_WAIT, S_STOP, S_VALID);
+  type T_spi_state is (S_IDLE, S_START, S_DATA, S_VALID_WAIT, S_STOP, S_VALID);
 
-  signal sig_spi_s          : t_spi_state := S_IDLE;
+  signal sig_spi_s          : T_spi_state := S_IDLE;
 
   signal sig_m_axis_tdest   : std_logic_vector(7 downto 0);
   signal sig_m_axis_tdata   : std_logic_vector(7 downto 0);
@@ -70,11 +70,11 @@ begin
 
   sig_bit_timeout <= sig_bit_time(sig_bit_time'left);
 
-  p_sig_spi_csn  : process(aclk) is begin if rising_edge(aclk) then sig_spi_csn  <= spi_csn;  end if; end process;
-  p_sig_spi_miso : process(aclk) is begin if rising_edge(aclk) then sig_spi_miso <= spi_miso; end if; end process;
-  p_sig_spi_clk  : process(aclk) is begin if rising_edge(aclk) then sig_spi_clk  <= sig_spi_clk(sig_spi_clk'left - 1 downto 0) & spi_clk; end if; end process;
+  PROC_sig_spi_csn  : process(aclk) is begin if rising_edge(aclk) then sig_spi_csn  <= spi_csn;  end if; end process;
+  PROC_sig_spi_miso : process(aclk) is begin if rising_edge(aclk) then sig_spi_miso <= spi_miso; end if; end process;
+  PROC_sig_spi_clk  : process(aclk) is begin if rising_edge(aclk) then sig_spi_clk  <= sig_spi_clk(sig_spi_clk'left - 1 downto 0) & spi_clk; end if; end process;
 
-  p_sig_m_axis : process(aclk) is
+  PROC_sig_m_axis : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -95,7 +95,7 @@ begin
     end if;
   end process;
 
-  p_sig_bit_cnt : process(aclk) is
+  PROC_sig_bit_cnt : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -112,14 +112,14 @@ begin
     end if;
   end process;
 
-  p_sig_bit_time : process(aclk) is
+  PROC_sig_bit_time : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
         sig_bit_time <= (others => '1');
       else
         if sig_bit_valid = '1' or (sig_bit_timeout = '0' and sig_tdest_valid = "10") then
-          sig_bit_time <= '0' & to_unsigned( c_max_count - 1, sig_bit_time'length - 1 );
+          sig_bit_time <= '0' & to_unsigned( C_MAX_COUNT - 1, sig_bit_time'length - 1 );
         elsif sig_bit_time(sig_bit_time'left) = '0' then
           sig_bit_time <= sig_bit_time - 1;
         end if;
@@ -127,7 +127,7 @@ begin
     end if;
   end process;
 
-  p_sig_tdest : process(aclk) is
+  PROC_sig_tdest : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -145,7 +145,7 @@ begin
     end if;
   end process;
 
-  p_sig_tdata : process(aclk) is
+  PROC_sig_tdata : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -158,7 +158,7 @@ begin
     end if;
   end process;
 
-  p_sig_tlast : process(aclk) is
+  PROC_sig_tlast : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -175,7 +175,7 @@ begin
     end if;
   end process;
 
-  p_sig_tvalid : process(aclk) is
+  PROC_sig_tvalid : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -190,7 +190,7 @@ begin
     end if;
   end process;
 
-  p_sig_spi_s : process(aclk) is
+  PROC_sig_spi_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then

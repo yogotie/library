@@ -26,7 +26,7 @@ end i2c_bit_tx;
 
 architecture rtl_i2c_bit_tx of i2c_bit_tx is
 
-  constant c_cnt_max        : integer := integer(ceil(2.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
+  constant C_CNT_MAX        : integer := integer(ceil(2.0*real(g_clock_freq_hz)/real(g_i2c_freq_hz)));
 
   signal sig_bit            : std_logic_vector(1 downto 0);
   signal sig_bit_tvalid     : std_logic;
@@ -43,10 +43,10 @@ begin
   scl_out             <= sig_scl;
   s_axis_bit_tready   <= '1' when sig_bit_done = '1' else '0';
 
-  sig_bit_done        <= '1' when sig_bit_phase_cnt = c_cnt_max - 1 and sig_bit_phase = "11" else '0';
-  sig_bit_phase_done  <= '1' when sig_bit_phase_cnt = c_cnt_max - 1 else '0';
+  sig_bit_done        <= '1' when sig_bit_phase_cnt = C_CNT_MAX - 1 and sig_bit_phase = "11" else '0';
+  sig_bit_phase_done  <= '1' when sig_bit_phase_cnt = C_CNT_MAX - 1 else '0';
 
-  sig_bit_p : process(aclk) is
+  PROC_sig_bit : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -64,7 +64,7 @@ begin
     end if;
   end process;
 
-  sig_sda_scl_p : process(aclk) is
+  PROC_sig_sda_scl : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -111,7 +111,7 @@ begin
     end if;
   end process;
 
-  sig_bit_phase_p : process(aclk) is
+  PROC_sig_bit_phase : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -124,13 +124,13 @@ begin
     end if;
   end process;
 
-  sig_bit_phase_cnt_p : process(aclk) is
+  PROC_sig_bit_phase_cnt : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
         sig_bit_phase_cnt <= (others => '0');
       else
-        if sig_bit_phase_cnt >= c_cnt_max - 1 then
+        if sig_bit_phase_cnt >= C_CNT_MAX - 1 then
           sig_bit_phase_cnt <= (others => '0');
         else
           sig_bit_phase_cnt <= sig_bit_phase_cnt + 1;

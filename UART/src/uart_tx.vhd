@@ -12,14 +12,8 @@ entity uart_tx is
     aclk          : in  std_logic;
     aresetn       : in  std_logic;
 
-    ------------------------
-    -- uart_tx Interface
-    ------------------------
     tx            : out std_logic;
 
-    ------------------------
-    -- FPGA Fabric Transmit Interface
-    ------------------------
     s_axis_tdata  : in  std_logic_vector(7 downto 0);
     s_axis_tlast  : in  std_logic;
     s_axis_tvalid : in  std_logic;
@@ -29,11 +23,11 @@ end uart_tx;
 
 architecture rtl_uart_tx of uart_tx is
 
-  constant c_max_count  : integer := g_clk_freq / g_baud_rate;
+  constant C_MAX_COUNT  : integer := g_clk_freq / g_baud_rate;
 
-  type t_tx_state is (S_IDLE, S_START, S_DATA, S_DONE);
+  type T_tx_state is (S_IDLE, S_START, S_DATA, S_DONE);
 
-  signal sig_tx_s       : t_tx_state := S_IDLE;
+  signal sig_tx_s       : T_tx_state := S_IDLE;
 
   signal sig_cnt_done   : std_logic;                    -- flags when a bit is done
   signal sig_counter    : unsigned(15 downto 0);        -- counts the bit time
@@ -44,7 +38,7 @@ begin
 
   s_axis_tready <= '1' when sig_tx_s = S_DONE else '0';  -- return that s_axis_tready signal when the transmission is done
 
-  p_tx : process(aclk) is
+  PROC_tx : process(aclk) is
   begin
     if rising_edge(aclk) then
       case sig_tx_s is
@@ -56,13 +50,13 @@ begin
   end process;
 
   -- flag when the bit time is complete
-  p_sig_cnd_done : process(aclk) is
+  PROC_sig_cnd_done : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
         sig_cnt_done <= '0';
       else
-        if sig_counter = c_max_count - 2 then
+        if sig_counter = C_MAX_COUNT - 2 then
           sig_cnt_done <= '1';
         else
           sig_cnt_done <= '0';
@@ -72,7 +66,7 @@ begin
   end process;
 
   -- counter for the length of each bit
-  p_sig_counter : process(aclk) is
+  PROC_sig_counter : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -88,7 +82,7 @@ begin
   end process;
 
   -- count the bits transmitted
-  p_sig_bit_cnt : process(aclk) is
+  PROC_sig_bit_cnt : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -104,7 +98,7 @@ begin
   end process;
 
   -- shift data out
-  p_sig_data : process(aclk) is
+  PROC_sig_data : process(aclk) is
   begin
     if rising_edge(aclk) then
       if sig_tx_s = S_IDLE then -- get the data to send when in the idle state
@@ -115,7 +109,7 @@ begin
     end if;
   end process;
 
-  p_sig_tx_s : process(aclk) is
+  PROC_sig_tx_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then

@@ -24,7 +24,7 @@ architecture behav_tb_uart of tb_uart is
 
   signal END_OF_SIMULATION  : boolean := false;
   
-  signal c_clk_period       : time := real(real(1) / real(g_clk_freq)) * 1 sec;
+  signal C_CLK_PERIOD       : time := real(real(1) / real(g_clk_freq)) * 1 sec;
   
   signal aclk               : std_logic := '0';
   signal aresetn            : std_logic;
@@ -61,7 +61,7 @@ begin
       s_axis_tready => s_axis_tready
     );
   
-  aclk    <= not aclk after c_clk_period / 2;
+  aclk    <= not aclk after C_CLK_PERIOD / 2;
   aresetn <= '0', '1' after 100 ns;
 
   rx <= tx;

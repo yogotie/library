@@ -48,7 +48,7 @@ begin
   sig_spi_miso  <= spi_miso;
   spi_clk       <= sig_spi_clk;
 
-  u_spi_tx : entity work.spi_tx
+  U_spi_tx : entity work.spi_tx
     generic map (
       clk_freq      => clk_freq,
       spi_freq      => spi_freq,
@@ -71,7 +71,7 @@ begin
       s_axis_tready => s_axis_tready
     );
 
-  u_spi_rx : entity work.spi_rx
+  U_spi_rx : entity work.spi_rx
     generic map (
       clk_freq      => clk_freq,
       spi_freq      => spi_freq,

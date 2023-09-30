@@ -17,14 +17,14 @@ entity tb_uart_rx is
   );
 end tb_uart_rx;
 
-architecture behav_uart_rx_ut of tb_uart_rx is
+architecture behav_tb_uart_rx of tb_uart_rx is
 
   constant m_axis           : axi_stream_slave_t  := new_axi_stream_slave ( data_length => 8 );
 
   signal END_OF_SIMULATION  : boolean := false;
   
-  constant c_buad_period    : time := real(real(1) / real(g_baud_rate)) * 1 sec;
-  constant c_clk_period     : time := real(real(1) / real(g_clk_freq)) * 1 sec;
+  constant C_BUAD_PERIOD    : time := real(real(1) / real(g_baud_rate)) * 1 sec;
+  constant C_CLK_PERIOD     : time := real(real(1) / real(g_clk_freq)) * 1 sec;
 
   signal aclk               : std_logic := '0';
   signal aresetn            : std_logic;
@@ -53,12 +53,12 @@ begin
       m_axis_tready => m_axis_tready
     );
   
-  aclk    <= not aclk after c_clk_period / 2;
+  aclk    <= not aclk after C_CLK_PERIOD / 2;
   aresetn <= '0', '1' after 100 ns;
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
@@ -66,23 +66,23 @@ begin
   end process;
   
   -- procedure to simulate serial data
-  p_rx : process
+  PROC_rx : process
     -- procedure to generate the stimulus
     procedure send_data(d:std_logic_vector(7 downto 0)) is
     begin
       -- start bit
       rx <= '0';
-      wait for c_buad_period;
+      wait for C_BUAD_PERIOD;
       
       -- 8 data bits
       for i in 0 to 7 loop
         rx <= d(i);
-        wait for c_buad_period;
+        wait for C_BUAD_PERIOD;
       end loop;
       
       -- stop bit
       rx <= '1';
-      wait for c_buad_period;
+      wait for C_BUAD_PERIOD;
     end procedure send_data;
   begin
     wait for 1 us;
@@ -93,7 +93,7 @@ begin
     wait;
   end process;
 
-  p_m_axis : process
+  PROC_m_axis : process
   begin
     check_axi_stream( net, m_axis, expected => X"12", tlast => '1' );
     check_axi_stream( net, m_axis, expected => X"34", tlast => '1' );
@@ -115,6 +115,6 @@ begin
       tready   => m_axis_tready
     );
   
-end behav_uart_rx_ut;
+end behav_tb_uart_rx;
 
 -- synthesis translate_on

@@ -16,11 +16,11 @@ entity tb_uart_axi is
   );
 end tb_uart_axi;
 
-architecture uart_avalon_ut_a of tb_uart_axi is
+architecture behav_tb_uart_axi of tb_uart_axi is
 
   constant s_axi        : bus_master_t := new_bus(data_length => 32, address_length => 8);
 
-  signal c_clk_period   : time := real(real(1) / real(g_clk_freq)) * 1 sec;
+  signal C_CLK_PERIOD   : time := real(real(1) / real(g_clk_freq)) * 1 sec;
 
   signal aclk           : std_logic := '0';
   signal aresetn        : std_logic;
@@ -71,10 +71,10 @@ begin
       s_axi_bready  => s_axi_bready
     );
 
-  aclk   <= not aclk after c_clk_period / 2;
+  aclk   <= not aclk after C_CLK_PERIOD / 2;
   aresetn <= '0', '1' after 100 ns;
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
 
@@ -104,7 +104,7 @@ begin
 
   test_runner_watchdog(runner, 1 ms);
 
-  axi_lite_master_inst: entity vunit_lib.axi_lite_master
+  U_axi_lite_master_inst: entity vunit_lib.axi_lite_master
     generic map (
       bus_handle => s_axi
     )
@@ -129,6 +129,6 @@ begin
       bresp   => s_axi_bresp
     );
 
-end uart_avalon_ut_a;
+end behav_tb_uart_axi;
 
 -- synthesis translate_on

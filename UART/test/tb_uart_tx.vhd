@@ -17,14 +17,14 @@ entity tb_uart_tx is
   );
 end tb_uart_tx;
 
-architecture behave_tb_uart_tx of tb_uart_tx is
+architecture behav_tb_uart_tx of tb_uart_tx is
   
   constant s_axis           : axi_stream_master_t := new_axi_stream_master( data_length => 8 );
 
   signal END_OF_SIMULATION  : boolean := false;
 
-  signal c_baud_period      : time := real(real(1) / real(g_baud_rate)) * 1 sec;
-  signal c_clk_period       : time := real(real(1) / real(g_clk_freq)) * 1 sec;
+  signal C_BAUD_PERIOD      : time := real(real(1) / real(g_baud_rate)) * 1 sec;
+  signal C_CLK_PERIOD       : time := real(real(1) / real(g_clk_freq)) * 1 sec;
   
   signal aclk               : std_logic := '0';
   signal aresetn            : std_logic;
@@ -51,26 +51,26 @@ begin
       s_axis_tready => s_axis_tready
     );
   
-  aclk    <= not aclk after c_clk_period / 2;
+  aclk    <= not aclk after C_CLK_PERIOD / 2;
   aresetn <= '0', '1' after 100 ns;
 
   test_runner_watchdog(runner, 10 ms);
 
-  main : process
+  PROC_main : process
   begin
     test_runner_setup(runner, runner_cfg);
     wait until END_OF_SIMULATION = true;
     test_runner_cleanup(runner); -- Simulation ends here
   end process;
 
-  p_tx : process
+  PROC_tx : process
     procedure check_data( expected : std_logic_vector(7 downto 0) ) is
       variable actual : std_logic_vector(7 downto 0);
     begin
       wait until falling_edge(tx);
-      wait for c_baud_period / 2;
+      wait for C_BAUD_PERIOD / 2;
       for i in 0 to 7 loop
-        wait for c_baud_period;
+        wait for C_BAUD_PERIOD;
         actual(i) := tx;
       end loop;
 
@@ -90,7 +90,7 @@ begin
   
   s_axis_tlast    <= '1';
 
-  p_s_axis : process
+  PROC_s_axis : process
   begin
     wait for 1 us;
     push_axi_stream( net, s_axis, tdata => X"12", tlast => '1' );
@@ -98,7 +98,7 @@ begin
 
     wait;
   end process;
-  
+
   U_s_axis : entity vunit_lib.axi_stream_master
     generic map(
       master  => s_axis
@@ -112,6 +112,6 @@ begin
       tready   => s_axis_tready
     );
   
-end architecture behave_tb_uart_tx;
+end architecture behav_tb_uart_tx;
 
 -- synthesis translate_on

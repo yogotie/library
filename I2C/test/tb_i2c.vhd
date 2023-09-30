@@ -24,7 +24,7 @@ architecture behav_tb_i2c of tb_i2c is
   constant m_axis_rx      : axi_stream_slave_t  := new_axi_stream_slave ( data_length => 8, user_length => 3 );
   constant s_axis_tx      : axi_stream_master_t := new_axi_stream_master( data_length => 8, user_length => 3 );
   
-  constant c_period        : time := integer(1.0e9/real(g_i2c_freq_hz)) * 1 ns;
+  constant C_PERIOD        : time := integer(1.0e9/real(g_i2c_freq_hz)) * 1 ns;
 
   signal END_OF_SIMULATION : boolean := false;
 

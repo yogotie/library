@@ -23,9 +23,9 @@ end i2c_byte_tx;
 
 architecture rtl_i2c_byte_tx of i2c_byte_tx is
 
-  type byte_state is (S_IDLE, S_START_BIT, S_DATA_BIT, S_ACK_BIT, S_STOP_BIT, S_DONE);
+  type T_sig_byte_state is (S_IDLE, S_START_BIT, S_DATA_BIT, S_ACK_BIT, S_STOP_BIT, S_DONE);
 
-  signal byte_s                         : byte_state := S_IDLE;
+  signal sig_byte_s                     : T_sig_byte_state := S_IDLE;
 
   signal sig_s_axis_byte_terror         : std_logic;
   signal sig_s_axis_byte_tendofpacket   : std_logic;
@@ -39,15 +39,15 @@ begin
 
   s_axis_byte_tready  <= not sig_s_axis_byte_tvalid;
 
-  m_axis_bit_tdata    <= C_START when byte_s = S_START_BIT else
-                         C_STOP  when byte_s = S_STOP_BIT  else
-                         '0' & sig_s_axis_byte_tdata(sig_bit_idx) when byte_s = S_DATA_BIT else
-                         '0' & sig_s_axis_byte_terror when byte_s = S_ACK_BIT else
+  m_axis_bit_tdata    <= C_START when sig_byte_s = S_START_BIT else
+                         C_STOP  when sig_byte_s = S_STOP_BIT  else
+                         '0' & sig_s_axis_byte_tdata(sig_bit_idx) when sig_byte_s = S_DATA_BIT else
+                         '0' & sig_s_axis_byte_terror when sig_byte_s = S_ACK_BIT else
                          "01";
 
-  m_axis_bit_tvalid   <= '0' when byte_s = S_IDLE or byte_s = S_DONE else '1';
+  m_axis_bit_tvalid   <= '0' when sig_byte_s = S_IDLE or sig_byte_s = S_DONE else '1';
 
-  i_asi_p : process(aclk) is
+  PROC_sig_s_axis_byte : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
@@ -57,7 +57,7 @@ begin
         sig_s_axis_byte_tdata           <= (others => '0');
         sig_s_axis_byte_tvalid          <= '0';
       else
-        if byte_s = S_DONE then
+        if sig_byte_s = S_DONE then
           sig_s_axis_byte_tvalid          <= '0';
         elsif s_axis_byte_tvalid = '1' and sig_s_axis_byte_tvalid = '0' then
           sig_s_axis_byte_terror          <= s_axis_byte_tuser(2);
@@ -70,61 +70,61 @@ begin
     end if;
   end process;
 
-  sig_bit_idx_p : process(aclk) is
+  PROC_sig_bit_idx : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
         sig_bit_idx <= 7;
       else
-        if byte_s = S_IDLE then
+        if sig_byte_s = S_IDLE then
           sig_bit_idx <= 7;
-        elsif m_axis_bit_tready = '1' and byte_s = S_DATA_BIT and sig_bit_idx /= 0 then
+        elsif m_axis_bit_tready = '1' and sig_byte_s = S_DATA_BIT and sig_bit_idx /= 0 then
           sig_bit_idx <= sig_bit_idx - 1;
         end if;
       end if;
     end if;
   end process;
 
-  byte_sm : process(aclk) is
+  PROC_sig_byte_s : process(aclk) is
   begin
     if rising_edge(aclk) then
       if aresetn = '0' then
-        byte_s <= S_IDLE;
+        sig_byte_s <= S_IDLE;
       else
-        case byte_s is
+        case sig_byte_s is
           when S_IDLE =>
             if sig_s_axis_byte_tvalid = '1' and sig_s_axis_byte_tstartofpacket = '1' then
-              byte_s <= S_START_BIT;
+              sig_byte_s <= S_START_BIT;
             elsif sig_s_axis_byte_tvalid = '1' then
-              byte_s <= S_DATA_BIT;
+              sig_byte_s <= S_DATA_BIT;
             end if;
 
           when S_START_BIT =>
             if m_axis_bit_tready = '1' then
-              byte_s <= S_DATA_BIT;
+              sig_byte_s <= S_DATA_BIT;
             end if;
 
           when S_DATA_BIT =>
             if m_axis_bit_tready = '1' and sig_bit_idx = 0 then
-              byte_s <= S_ACK_BIT;
+              sig_byte_s <= S_ACK_BIT;
             end if;
 
           when S_ACK_BIT =>
             if m_axis_bit_tready = '1' then
               if sig_s_axis_byte_tendofpacket = '1' then
-                byte_s <= S_STOP_BIT;
+                sig_byte_s <= S_STOP_BIT;
               else
-                byte_s <= S_DONE;
+                sig_byte_s <= S_DONE;
               end if;
             end if;
 
           when S_STOP_BIT =>
             if m_axis_bit_tready = '1' then
-              byte_s <= S_DONE;
+              sig_byte_s <= S_DONE;
             end if;
 
           when S_DONE =>
-            byte_s <= S_IDLE;
+            sig_byte_s <= S_IDLE;
 
         end case;
       end if;

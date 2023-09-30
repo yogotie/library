@@ -24,7 +24,7 @@ architecture behav_tb_i2c_bit_rx of tb_i2c_bit_rx is
   
   constant m_axis           : axi_stream_slave_t  := new_axi_stream_slave ( data_length => 2 );
 
-  constant c_period         : time := integer( 1.0e9/real(g_i2c_freq_hz) ) * 1 ns;
+  constant C_PERIOD         : time := integer( 1.0e9/real(g_i2c_freq_hz) ) * 1 ns;
 
   signal END_OF_SIMULATION  : boolean := false;
 
@@ -76,38 +76,38 @@ begin
         when C_BIT_0 =>
           sda_in  <= '0';
           scl_in  <= '0';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
           scl_in  <= 'H';
-          wait for c_period / 2;
+          wait for C_PERIOD / 2;
           scl_in  <= '0';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
 
         when C_BIT_1 =>
           sda_in  <= 'H';
           scl_in  <= '0';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
           scl_in  <= 'H';
-          wait for c_period / 2;
+          wait for C_PERIOD / 2;
           scl_in  <= '0';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
 
         when C_START =>
           sda_in  <= 'H';
           scl_in  <= 'H';
-          wait for c_period / 2;
+          wait for C_PERIOD / 2;
           sda_in  <= '0';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
           scl_in  <= '0';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
 
         when C_STOP =>
           sda_in  <= '0';
           scl_in  <= '0';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
           scl_in  <= 'H';
-          wait for c_period / 4;
+          wait for C_PERIOD / 4;
           sda_in  <= 'H';
-          wait for c_period / 2;
+          wait for C_PERIOD / 2;
 
         when others =>
       end case;
